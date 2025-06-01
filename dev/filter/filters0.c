@@ -477,6 +477,14 @@ int do_filters(dataptr dz)
     double *z = dz->parray[FLT_Z];
     double *d = dz->parray[FLT_D];
     double *e = dz->parray[FLT_E];
+
+    //DEBUG LOGGING: Filter Coefficients
+    int num_filters = dz->iparam[FLT_CNT];
+    fprintf(stderr, "DEBUG: Filter coefficients:\n");
+    for (int i = 0; i < num_filters; i++) {
+        fprintf(stderr, "  Filter %d: a = %g, b = %g, ampl = %g\n", i, a[i], b[i], ampl[i]);
+    }
+
     for (n = 0; n < dz->ssampsread; n += chans)
         filtering(n,chans,buf,a,b,y,z,d,e,ampl,dz);
     return(CONTINUE);
@@ -621,8 +629,13 @@ void filtering(int n,int chans,float *buf,double *a,double *b,double *y,double *
     int chno, this_samp, fno, i;
 
     for(chno = 0; chno < chans; chno++) {
+		// jh checking for denormals
+        if (fabs(xx) < 1e-300 && xx != 0.0) {
+            fprintf(stderr, "WARNING: Possible denormal at sample %d, ch %d, xx = %.308e\n", n, chno, xx);
+        }
         this_samp = n + chno;
         input = (double)buf[this_samp];
+        sum   = 0.0;
         sum   = 0.0;
         for (fno = 0; fno < dz->iparam[FLT_CNT]; fno++) {
             i    = (fno * chans) + chno;
