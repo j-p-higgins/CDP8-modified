@@ -36,6 +36,8 @@
 #include <sfsys.h>
 /*RWD*/
 #include <string.h>
+/*JH*/
+#include <math.h>
 
 #ifndef cdp_round
 extern int cdp_round(double a);
@@ -625,10 +627,18 @@ void filtering(int n,int chans,float *buf,double *a,double *b,double *y,double *
         for (fno = 0; fno < dz->iparam[FLT_CNT]; fno++) {
             i    = (fno * chans) + chno;
             xx   = input + (a[fno] * y[i]) + (b[fno] * z[i]);
+            
+            // JH flush potential denormals
+            if (fabs(xx) < 1e-30) xx = 0.0;
+
             z[i] = y[i];
             y[i] = xx;
             if(dz->vflag[FLT_DBLFILT]) {
                 xx   += (a[fno] * d[i]) + (b[fno] * e[i]);
+
+                // JH flush again after double filtering
+                if (fabs(xx) < 1e-30) xx = 0.0;
+
                 e[i] = d[i];
                 d[i] = xx;
             }
