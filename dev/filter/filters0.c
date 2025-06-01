@@ -84,6 +84,8 @@ int filter_process(dataptr dz)
     float *buf = dz->sampbuf[0];
     int n, m, k, sndend = 0;
     int framend, framestart, framesize = F_SECSIZE, framecnt = dz->buflen/framesize;
+    fprintf(stdout, "INIT: dz->buflen = %d | dz->infile->channels = %d\n", dz->buflen, dz->infile->channels);
+	fflush(stdout);
     switch(dz->process) {
     case(FLTBANKV):
         if(dz->vflag[2])
@@ -224,8 +226,8 @@ int filter_process(dataptr dz)
             return DATA_ERROR;
         }
 
-        //dz->param[FLT_GAIN] *= (inmaxsamp/outmaxsamp);
-        dz->param[FLT_GAIN] *= 1 //jh bypassing normalisation to test if that is causing the loop to get stuck
+        dz->param[FLT_GAIN] *= (inmaxsamp/outmaxsamp);
+        //dz->param[FLT_GAIN] *= 1 //jh bypassing normalisation to test if that is causing the loop to get stuck
 
         sndseekEx(dz->ifd[0],0,0);
         reset_filedata_counters(dz);
@@ -264,6 +266,9 @@ int filter_process(dataptr dz)
         fprintf(stdout,
             "LOOP %d | samps_left: %ld | ssampsread: %d | filter_tail: %d | tail_extend: %d\n",
             ++loop_iter, dz->samps_left, dz->ssampsread, filter_tail, tail_extend);
+        fprintf(stdout,
+            "DEBUG: buflen=%d | chans=%d | do_norm=%d | process=%d\n",
+            dz->buflen, dz->infile->channels, do_norm, dz->process);
         fflush(stdout);
         memset((char *)dz->sampbuf[0],0,(size_t) (dz->buflen * sizeof(float)));
         if(filter_tail > 0 || tail_extend) {
@@ -322,15 +327,23 @@ int filter_process(dataptr dz)
                 framestart = framend - framesize;
                 maxsamp = 0.0;
                 for(n = framend-chans;n >= framestart;n-=chans) {   
-                    for(m=0;m<chans;m++) {                  //  Search backwards thro frame, samp-grup by samp-group
-                        if(fabs(buf[n+m]) > maxsamp) {
-                            if(!sndendset) {                //  If samples cease to be zero
-                                sndend = n + chans;         //  Mark start of end-zeros in buffer
-                                sndendset = 1;              //  and flag that snd end has been found
+                    for (m = 0; m < chans; m++) {
+                        float val = buf[n + m];
+                        double absval = fabs(val);
+                        if (absval > maxsamp) {
+                            if (!sndendset) {
+                                sndend = n + chans;
+                                sndendset = 1;
                             }
-                            maxsamp = fabs(buf[n+m]);
+                            maxsamp = absval;
+                        }
+                        if (absval > 0.0) {
+                            fprintf(stdout, "DEBUG: Non-zero sample detected: buf[%d] = %.10f\n", n + m, val);
+                            fflush(stdout);
                         }
                     }
+                    fprintf(stdout, "DEBUG: maxsamp=%.10f | MINUS96DB=%.10f\n", maxsamp, MINUS96DB);
+                    fflush(stdout);
                     if(maxsamp < MINUS96DB) {               //  If max level in frame falls below -96dB
                         if(sndendset) {                     //  If we found a place in buffer after which samples were all zero
                             dz->ssampsread = sndend;        //  Mark this as end of output, and quit the main filtering loop
