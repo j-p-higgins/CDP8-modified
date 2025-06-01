@@ -259,6 +259,11 @@ int filter_process(dataptr dz)
             return(exit_status);
     }
     while(dz->samps_left > 0 || filter_tail > 0 || tail_extend) {
+        static int loop_iter = 0;
+        fprintf(stdout,
+            "LOOP %d | samps_left: %ld | ssampsread: %d | filter_tail: %d | tail_extend: %d\n",
+            ++loop_iter, dz->samps_left, dz->ssampsread, filter_tail, tail_extend);
+        fflush(stdout);
         memset((char *)dz->sampbuf[0],0,(size_t) (dz->buflen * sizeof(float)));
         if(filter_tail > 0 || tail_extend) {
             dz->ssampsread = 0;
@@ -347,6 +352,7 @@ int filter_process(dataptr dz)
         }
         if(tail_extend)
             tail_extend++;
+        fprintf(stdout, "Samples left to read: %d\n", dz->ssampsread);
         if(dz->ssampsread > 0) {
             if(sloom && was_tail_extend) {                  //  Force Loom progress bar to respond to tail-write
                 if(!tail_extend)
@@ -355,18 +361,10 @@ int filter_process(dataptr dz)
                     dz->total_samps_written = (long)round((double)dz->insams[0] * ((double)(tail_extend % 8)/8.0));
                 dz->total_samps_written -= dz->ssampsread;
             }
+            fprintf(stdout, "INFO: About to write %d samples\n", dz->ssampsread);
             if((exit_status = write_samps(dz->sampbuf[0],dz->ssampsread,dz))<0)
                 return(exit_status);
-        else
-            if (was_tail_extend) {                  //  Force Loom progress bar to respond to tail-write
-                if (!tail_extend)
-                    dz->total_samps_written = dz->insams[0];
-                else
-                    dz->total_samps_written = (long)round((double)dz->insams[0] * ((double)(tail_extend % 8) / 8.0));
-                dz->total_samps_written -= dz->ssampsread;
-            }
-            if ((exit_status = write_samps(dz->sampbuf[0], dz->ssampsread, dz)) < 0)
-                return(exit_status);
+            fprintf(stdout, "INFO: Wrote %d samples\n", dz->ssampsread);
         }
     }               
     if(dz->iparam[FLT_OVFLW] > 0)  {
