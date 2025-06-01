@@ -76,7 +76,7 @@ int iterating_filter(dataptr dz)
         return(exit_status);
     if(!flteq(dz->param[FLT_PRESCALE],1.0))
         scale_input(dz);
-    //display_virtual_time(0L,dz);
+    display_virtual_time(0L,dz);
     if(dz->vflag[FLT_EXPDEC])
         amp_smooth(dz);
     orig_maxsamp = get_maxsamp(dz->sampbuf[0],dz);
