@@ -224,11 +224,11 @@ int filter_process(dataptr dz)
             return DATA_ERROR;
         }
 
-        dz->param[FLT_GAIN] *= (inmaxsamp/outmaxsamp);
+        //dz->param[FLT_GAIN] *= (inmaxsamp/outmaxsamp);
+        dz->param[FLT_GAIN] *= 1 //jh bypassing normalisation to test if that is causing the loop to get stuck
 
         sndseekEx(dz->ifd[0],0,0);
         reset_filedata_counters(dz);
-        dz->ssampsread = 0; // JH hard reset samples read to 0
         if(dz->process==FLTBANKV || dz->process==FLTBANKV2) {
             for(n = 0;n<dz->iparam[FLT_CNT];n++) {
                 dz->parray[FLT_FRQ][n]      = dz->parray[FLT_INFRQ][n];
