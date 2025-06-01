@@ -357,6 +357,16 @@ int filter_process(dataptr dz)
             }
             if((exit_status = write_samps(dz->sampbuf[0],dz->ssampsread,dz))<0)
                 return(exit_status);
+        else
+            if (was_tail_extend) {                  //  Force Loom progress bar to respond to tail-write
+                if (!tail_extend)
+                    dz->total_samps_written = dz->insams[0];
+                else
+                    dz->total_samps_written = (long)round((double)dz->insams[0] * ((double)(tail_extend % 8) / 8.0));
+                dz->total_samps_written -= dz->ssampsread;
+            }
+            if ((exit_status = write_samps(dz->sampbuf[0], dz->ssampsread, dz)) < 0)
+                return(exit_status);
         }
     }               
     if(dz->iparam[FLT_OVFLW] > 0)  {
