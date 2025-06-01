@@ -228,6 +228,7 @@ int filter_process(dataptr dz)
 
         sndseekEx(dz->ifd[0],0,0);
         reset_filedata_counters(dz);
+        dz->ssampsread = 0; // JH hard reset samples read to 0
         if(dz->process==FLTBANKV || dz->process==FLTBANKV2) {
             for(n = 0;n<dz->iparam[FLT_CNT];n++) {
                 dz->parray[FLT_FRQ][n]      = dz->parray[FLT_INFRQ][n];
