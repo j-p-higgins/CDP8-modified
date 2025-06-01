@@ -105,7 +105,7 @@ int filter_process(dataptr dz)
         print_filter_frqs(dz);
         return(FINISHED);
     }
-    display_virtual_time(0,dz);
+    //display_virtual_time(0,dz);
 
 // NEW MAY 2012
     if(do_norm) {
