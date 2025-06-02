@@ -755,6 +755,7 @@ sndcloseEx(int fd)
         rc |= sfclose(sf->fd);
 
         freesndfd(fd);
+        fprintf(stderr, "DEBUG: sndcloseEx called for fd %d\n", fd);
         return rc;
 }
 
