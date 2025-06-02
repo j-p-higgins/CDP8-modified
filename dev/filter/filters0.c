@@ -230,25 +230,10 @@ int filter_process(dataptr dz)
         fprintf(stdout, "Filter Gain: %.6f\n", dz->param[FLT_GAIN]);
         fflush(stdout);
 
-        // Get filename of current input file
-        const char* filename = snd_getfilename(dz->ifd[0]);
-
-        // Close input file before rewind
-        sndcloseEx(dz->ifd[0]);
-
-        if (!filename) {
-            fprintf(stderr, "ERROR: Unable to retrieve input filename for re-open.\n");
-            return DATA_ERROR;
+        int seek_result = sndseekEx(dz->ifd[0], 0, 0);
+        if (seek_result < 0) {
+            sprintf(errstr, "ERROR: sndseekEx() failed. Input file descriptor may be invalid.\n");
         }
-
-        // Reopen input file using saved filename
-        dz->ifd[0] = sndopenEx(filename, 0, 0);
-        if (dz->ifd[0] < 0) {
-            sprintf(errstr, "ERROR: Failed to reopen input file before normalization.\n");
-            return DATA_ERROR;
-        }
-
-        // Reset counters after re-opening
         reset_filedata_counters(dz);
 
         if(dz->process==FLTBANKV || dz->process==FLTBANKV2) {
