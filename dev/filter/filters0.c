@@ -239,6 +239,7 @@ int filter_process(dataptr dz)
             return DATA_ERROR;
         }
         reset_filedata_counters(dz);
+        dz->ssampsread = 0;  // reset samps read count
         fprintf(stdout, "After reset: samps_left=%ld, ssampsread=%d\n", dz->samps_left, dz->ssampsread);
         fflush(stdout);
 
