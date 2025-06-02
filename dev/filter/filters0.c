@@ -96,7 +96,9 @@ int filter_process(dataptr dz)
             do_norm = 1;
         break;
     case(FLTBANKN):
-        do_norm = 1;
+        do_norm = 0;
+        fprintf(stdout, "Bypassing normalisation.\n");
+        fflush(stdout);
         break;
     }
 // MAY 2012 TO HERE
@@ -257,6 +259,7 @@ int filter_process(dataptr dz)
         fflush(stdout);
     }
 // MAY 2012, TO HERE
+    dz->param[FLT_GAIN] *= 338.896;
     if(dz->process==FLTBANKV) {
         if((exit_status = newfval(&(dz->iparam[FLT_FSAMS]),dz))<0)
             return(exit_status);
