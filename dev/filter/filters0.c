@@ -231,7 +231,11 @@ int filter_process(dataptr dz)
         fprintf(stdout, "Filter Gain: %.6f\n", dz->param[FLT_GAIN]);
         fflush(stdout);
 
-        sndseekEx(dz->ifd[0],0,0);
+        int seek_result = sndseekEx(dz->ifd[0], 0, 0);
+        if (seek_result < 0) {
+            sprintf(errstr, "ERROR: sndseekEx() failed. Input file descriptor may be invalid.\n");
+            return FILE_ERROR;
+        }
         reset_filedata_counters(dz);
         if(dz->process==FLTBANKV || dz->process==FLTBANKV2) {
             for(n = 0;n<dz->iparam[FLT_CNT];n++) {
