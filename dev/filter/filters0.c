@@ -400,7 +400,13 @@ int filter_process(dataptr dz)
             fprintf(stdout,"INFO: Number of overflows: %d\n",dz->iparam[FLT_OVFLW]);
         fflush(stdout);
     }
+	//jh manually close filer after running filter_process
     fprintf(stderr, "DEBUG: filter_process finished; ifd[0] = %d\n", dz->ifd[0]);
+    if (dz->ifd[0] >= 0) {
+        fprintf(stderr, "DEBUG: Manually closing input file fd = %d\n", dz->ifd[0]);
+        sndcloseEx(dz->ifd[0]);
+        dz->ifd[0] = -1;
+    }
     return(FINISHED);
 }
 
