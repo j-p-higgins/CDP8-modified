@@ -96,9 +96,7 @@ int filter_process(dataptr dz)
             do_norm = 1;
         break;
     case(FLTBANKN):
-        do_norm = 0;
-        fprintf(stdout, "Bypassing normalisation.\n");
-        fflush(stdout);
+        do_norm = 1;
         break;
     }
 // MAY 2012 TO HERE
@@ -229,15 +227,20 @@ int filter_process(dataptr dz)
         }
 
         dz->param[FLT_GAIN] *= (inmaxsamp/outmaxsamp);
-        //dz->param[FLT_GAIN] *= 1 //jh bypassing normalisation to test if that is causing the loop to get stuck
         fprintf(stdout, "Filter Gain: %.6f\n", dz->param[FLT_GAIN]);
         fflush(stdout);
 
-        int seek_result = sndseekEx(dz->ifd[0], 0, 0);
-        if (seek_result < 0) {
-            sprintf(errstr, "ERROR: sndseekEx() failed. Input file descriptor may be invalid.\n");
-            return FILE_ERROR;
+        // JH CLOSE input file before rewind
+        sndcloseEx(dz->ifd[0]);
+
+        // JH REOPEN input file
+        dz->ifd[0] = sndopenEx(dz->infile->filename, 0, 0);
+        if (dz->ifd[0] < 0) {
+            sprintf(errstr, "ERROR: Failed to reopen input file before normalization.\n");
+            return DATA_ERROR;
         }
+
+        // JH RESET counters after re-opening
         reset_filedata_counters(dz);
         if(dz->process==FLTBANKV || dz->process==FLTBANKV2) {
             for(n = 0;n<dz->iparam[FLT_CNT];n++) {
@@ -259,7 +262,6 @@ int filter_process(dataptr dz)
         fflush(stdout);
     }
 // MAY 2012, TO HERE
-    dz->param[FLT_GAIN] *= 338.896;
     if(dz->process==FLTBANKV) {
         if((exit_status = newfval(&(dz->iparam[FLT_FSAMS]),dz))<0)
             return(exit_status);
