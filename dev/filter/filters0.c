@@ -239,6 +239,8 @@ int filter_process(dataptr dz)
             return DATA_ERROR;
         }
         reset_filedata_counters(dz);
+        fprintf(stdout, "After reset: samps_left=%ld, ssampsread=%d\n", dz->samps_left, dz->ssampsread);
+        fflush(stdout);
 
         if(dz->process==FLTBANKV || dz->process==FLTBANKV2) {
             for(n = 0;n<dz->iparam[FLT_CNT];n++) {
