@@ -231,8 +231,12 @@ int filter_process(dataptr dz)
         fflush(stdout);
 
         int seek_result = sndseekEx(dz->ifd[0], 0, 0);
+        fprintf(stdout, "DEBUG: sndseekEx returned %d\n", seek_result);
+        fflush(stdout);
         if (seek_result < 0) {
             sprintf(errstr, "ERROR: sndseekEx() failed. Input file descriptor may be invalid.\n");
+            fflush(stdout);
+            return DATA_ERROR;
         }
         reset_filedata_counters(dz);
 
