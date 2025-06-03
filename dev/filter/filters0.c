@@ -426,10 +426,6 @@ int safe_sndseek(dataptr dz) {
     fprintf(stderr, "safe_sndseek: Closing input file descriptor %d\n", dz->ifd[0]);
     sndcloseEx(dz->ifd[0]);
 
-    // Ensure the internal mapping is cleared
-    fprintf(stderr, "safe_sndseek: Clearing sndfiles[%d]\n", dz->ifd[0]);
-    sndfiles[dz->ifd[0]] = NULL;
-
     // Reopen the input file
     dz->ifd[0] = sndopenEx(filename, 0, 0);
     if (dz->ifd[0] < 0) {
