@@ -85,6 +85,7 @@ int filter_process(dataptr dz)
     int n, m, k, sndend = 0;
     int framend, framestart, framesize = F_SECSIZE, framecnt = dz->buflen/framesize;
     fprintf(stdout, "INIT: dz->buflen = %d | dz->infile->channels = %d\n", dz->buflen, dz->infile->channels);
+    fprintf(stderr, "flags at start: %x\n", sndfiles[dz->ifd[0]]->flags);
 	fflush(stdout);
     switch(dz->process) {
     case(FLTBANKV):
@@ -230,6 +231,9 @@ int filter_process(dataptr dz)
         fprintf(stdout, "Filter Gain: %.6f\n", dz->param[FLT_GAIN]);
         fflush(stdout);
 
+        fprintf(stderr, "flags before seek: %x\n", sndfiles[dz->ifd[0]]->flags);
+        fflush(stdout);
+
         int seek_result = sndseekEx(dz->ifd[0], 0, 0);
         fprintf(stdout, "DEBUG: sndseekEx returned %d\n", seek_result);
         fflush(stdout);
@@ -241,6 +245,8 @@ int filter_process(dataptr dz)
         reset_filedata_counters(dz);
         dz->ssampsread = 0;  // reset samps read count
         fprintf(stdout, "After reset: samps_left=%ld, ssampsread=%d\n", dz->samps_left, dz->ssampsread);
+        fflush(stdout);
+        fprintf(stderr, "flags after seek and reset: %x\n", sndfiles[dz->ifd[0]]->flags);
         fflush(stdout);
 
         if(dz->process==FLTBANKV || dz->process==FLTBANKV2) {
