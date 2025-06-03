@@ -245,6 +245,17 @@ CMDLINE active_params   POSSIBLY        POSSIBLY        POSSIBLY
         return(FAILED);
     }
     exit_status = print_messages_and_close_sndfiles(FINISHED,is_launched,dz);
+    // Free filter-related arrays
+    if (dz->parray) {
+        for (int i = 0; i < dz->array_cnt; i++) {
+            if (dz->parray[i]) {
+                free(dz->parray[i]);
+                dz->parray[i] = NULL;
+            }
+        }
+        free(dz->parray);
+        dz->parray = NULL;
+    }
     free(dz);
     return(SUCCEEDED);
 }
