@@ -285,14 +285,14 @@ int filter_process(dataptr dz)
             return(exit_status);
     }
     while(dz->samps_left > 0 || filter_tail > 0 || tail_extend) {
-        static int loop_iter = 0;
-        fprintf(stdout,
-            "LOOP %d | samps_left: %ld | ssampsread: %d | filter_tail: %d | tail_extend: %d\n",
-            ++loop_iter, dz->samps_left, dz->ssampsread, filter_tail, tail_extend);
-        fprintf(stdout,
-            "DEBUG: buflen=%d | chans=%d | do_norm=%d | process=%d\n",
-            dz->buflen, dz->infile->channels, do_norm, dz->process);
-        fflush(stdout);
+        //static int loop_iter = 0;
+        //fprintf(stdout,
+            //"LOOP %d | samps_left: %ld | ssampsread: %d | filter_tail: %d | tail_extend: %d\n",
+            //++loop_iter, dz->samps_left, dz->ssampsread, filter_tail, tail_extend);
+        //fprintf(stdout,
+            //"DEBUG: buflen=%d | chans=%d | do_norm=%d | process=%d\n",
+            //dz->buflen, dz->infile->channels, do_norm, dz->process);
+        //fflush(stdout);
         memset((char *)dz->sampbuf[0],0,(size_t) (dz->buflen * sizeof(float)));
         if(filter_tail > 0 || tail_extend) {
             dz->ssampsread = 0;
@@ -389,7 +389,7 @@ int filter_process(dataptr dz)
         }
         if(tail_extend)
             tail_extend++;
-        fprintf(stdout, "Samples left to read: %d\n", dz->ssampsread);
+        //fprintf(stdout, "Samples left to read: %d\n", dz->ssampsread);
         if(dz->ssampsread > 0) {
             if(sloom && was_tail_extend) {                  //  Force Loom progress bar to respond to tail-write
                 if(!tail_extend)

@@ -285,17 +285,34 @@ void cleanup_fltbankn(dataptr dz) {
         }
     }
 
-    // --- Clear lparray if used ---
-    if (dz->lparray[FLT_SAMPTIME]) {
-        free(dz->lparray[FLT_SAMPTIME]);
-        dz->lparray[FLT_SAMPTIME] = NULL;
+    // --- Free lparray entries ---
+    for (int i = 0; i < dz->larray_cnt; i++) {
+        if (dz->lparray[i]) {
+            free(dz->lparray[i]);
+            dz->lparray[i] = NULL;
+        }
     }
 
-    // --- Reset scalar state ---
+    // --- Free param array if dynamic ---
+    if (dz->param) {
+        free(dz->param);
+        dz->param = NULL;
+    }
+
+    // --- Optional: reset iparam and scalar state ---
     dz->iparam[FLT_CNT] = 0;
     dz->iparam[FLT_FRQ_INDEX] = 0;
     dz->iparam[FLT_TIMES_CNT] = 0;
     dz->iparam[FLT_OVFLW] = 0;
     dz->param[FLT_GAIN] = 1.0;
 
+    // --- Optional: Free breakpoints if used ---
+    if (dz->breakpoints) {
+        for (int i = 0; i < dz->brksize; i++) {
+            if (dz->breakpoints[i]) free(dz->breakpoints[i]);
+        }
+        free(dz->breakpoints);
+        dz->breakpoints = NULL;
+        dz->brksize = 0;
+    }
 }
