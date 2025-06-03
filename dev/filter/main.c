@@ -298,19 +298,4 @@ void cleanup_fltbankn(dataptr dz) {
     dz->iparam[FLT_OVFLW] = 0;
     dz->param[FLT_GAIN] = 1.0;
 
-
-    // --- Close input and output files ---
-    if (dz->ofd >= 0) {
-        sndcloseEx(dz->ofd);
-        dz->ofd = -1;
-    }
-    if (dz->ifd != NULL && dz->infilecnt > 0) {
-        for (int n = 0; n < dz->infilecnt; n++) {
-            if (dz->ifd[n] >= 0) {
-                sndcloseEx(dz->ifd[n]);
-                dz->ifd[n] = -1;
-            }
-        }
-    }
-
 }
