@@ -273,33 +273,59 @@ int setup_internal_arrays_and_array_pointers_for_lphp(dataptr dz)
     return(FINISHED);
 }
 
-void cleanup_fltbankn(dataptr dz) {
-    int i;
+void cleanup_fltbankn_state(dataptr dz) {
+    if (!dz) return;
 
-    // Free core filter arrays
+    // --- Free dynamically allocated arrays used in FLTBANKN ---
     int arrays[] = {
-        FLT_FRQ, FLT_AMP, FLT_AMPL, FLT_A, FLT_B,
-        FLT_WW, FLT_COSW, FLT_SINW, FLT_Y, FLT_Z
+        FLT_FRQ, FLT_AMP, FLT_AMPL, FLT_A, FLT_B, FLT_WW,
+        FLT_COSW, FLT_SINW, FLT_Y, FLT_Z, FLT_D, FLT_E,
+        FLT_FINCR, FLT_AINCR, FLT_LASTFVAL, FLT_LASTAVAL,
+        FLT_INFRQ, FLT_INAMP
     };
-    for (i = 0; i < sizeof(arrays) / sizeof(int); i++) {
+
+    for (int i = 0; i < sizeof(arrays) / sizeof(int); i++) {
         if (dz->parray[arrays[i]]) {
             free(dz->parray[arrays[i]]);
             dz->parray[arrays[i]] = NULL;
         }
     }
 
-    // Optional double-filtering arrays
-    if (dz->vflag[FLT_DBLFILT]) {
-        if (dz->parray[FLT_D]) {
-            free(dz->parray[FLT_D]);
-            dz->parray[FLT_D] = NULL;
-        }
-        if (dz->parray[FLT_E]) {
-            free(dz->parray[FLT_E]);
-            dz->parray[FLT_E] = NULL;
+    // --- Clear lparray if used ---
+    if (dz->lparray[FLT_SAMPTIME]) {
+        free(dz->lparray[FLT_SAMPTIME]);
+        dz->lparray[FLT_SAMPTIME] = NULL;
+    }
+
+    // --- Clear filter coefficient pointers ---
+    for (int i = 0; i < MAX_FLT_BRKS; i++) {
+        dz->brkptr[i] = NULL;
+        dz->brk[i] = NULL;
+    }
+
+    // --- Reset scalar state ---
+    dz->iparam[FLT_CNT] = 0;
+    dz->iparam[FLT_FRQ_INDEX] = 0;
+    dz->iparam[FLT_TIMES_CNT] = 0;
+    dz->iparam[FLT_OVFLW] = 0;
+    dz->param[FLT_GAIN] = 1.0;
+
+    // --- Close input and output files ---
+    if (dz->ofd >= 0) {
+        sndcloseEx(dz->ofd);
+        dz->ofd = -1;
+    }
+    if (dz->other_file >= 0) {
+        sndcloseEx(dz->other_file);
+        dz->other_file = -1;
+    }
+    if (dz->ifd != NULL && dz->infilecnt > 0) {
+        for (int n = 0; n < dz->infilecnt; n++) {
+            if (dz->ifd[n] >= 0) {
+                sndcloseEx(dz->ifd[n]);
+                dz->ifd[n] = -1;
+            }
         }
     }
 
-    // Also clear related integer params if desired
-    dz->iparam[FLT_CNT] = 0;
 }
