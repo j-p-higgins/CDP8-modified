@@ -408,6 +408,8 @@ int filter_process(dataptr dz)
             fprintf(stdout,"INFO: Number of overflows: %d\n",dz->iparam[FLT_OVFLW]);
         fflush(stdout);
     }
+    //close input file
+    sndcloseEx(dz->ifd[0]);
 
     return(FINISHED);
 }
