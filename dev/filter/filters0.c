@@ -230,14 +230,21 @@ int filter_process(dataptr dz)
         fprintf(stdout, "Filter Gain: %.6f\n", dz->param[FLT_GAIN]);
         fflush(stdout);
 
-        int seek_result = sndseekEx(dz->ifd[0], 0, 0);
-        fprintf(stdout, "DEBUG: sndseekEx returned %d\n", seek_result);
-        fflush(stdout);
-        if (seek_result < 0) {
-            sprintf(errstr, "ERROR: sndseekEx() failed. Input file descriptor may be invalid.\n");
-            fflush(stdout);
+        //int seek_result = sndseekEx(dz->ifd[0], 0, 0);
+        //fprintf(stdout, "DEBUG: sndseekEx returned %d\n", seek_result);
+        //fflush(stdout);
+        //if (seek_result < 0) {
+            //sprintf(errstr, "ERROR: sndseekEx() failed. Input file descriptor may be invalid.\n");
+            //fflush(stdout);
+            //return DATA_ERROR;
+        //}
+        
+        // jh testing alternative rewind method
+        if (safe_sndseek(dz) < 0) {
+            sprintf(errstr, "ERROR: Failed to safely rewind input file for normalization.\n");
             return DATA_ERROR;
         }
+
         reset_filedata_counters(dz);
         dz->ssampsread = 0;  // reset samps read count
         fprintf(stdout, "After reset: samps_left=%ld, ssampsread=%d\n", dz->samps_left, dz->ssampsread);
@@ -400,14 +407,42 @@ int filter_process(dataptr dz)
             fprintf(stdout,"INFO: Number of overflows: %d\n",dz->iparam[FLT_OVFLW]);
         fflush(stdout);
     }
-	//jh manually close filer after running filter_process
-    fprintf(stderr, "DEBUG: filter_process finished; ifd[0] = %d\n", dz->ifd[0]);
-    if (dz->ifd[0] >= 0) {
-        fprintf(stderr, "DEBUG: Manually closing input file fd = %d\n", dz->ifd[0]);
-        sndcloseEx(dz->ifd[0]);
-        dz->ifd[0] = -1;
-    }
+
     return(FINISHED);
+}
+
+int safe_sndseek(dataptr dz) {
+    // Get the input filename before closing
+    const char* filename = snd_getfilename(dz->ifd[0]);
+    if (!filename) {
+        fprintf(stderr, "safe_sndseek: ERROR — could not retrieve filename from ifd[0] = %d\n", dz->ifd[0]);
+        return -1;
+    }
+
+    fprintf(stderr, "safe_sndseek: Retrieved filename = %s\n", filename);
+
+    // Close the input file
+    fprintf(stderr, "safe_sndseek: Closing input file descriptor %d\n", dz->ifd[0]);
+    sndcloseEx(dz->ifd[0]);
+
+    // Ensure the internal mapping is cleared
+    fprintf(stderr, "safe_sndseek: Clearing sndfiles[%d]\n", dz->ifd[0]);
+    sndfiles[dz->ifd[0]] = NULL;
+
+    // Reopen the input file
+    dz->ifd[0] = sndopenEx(filename, 0, 0);
+    if (dz->ifd[0] < 0) {
+        fprintf(stderr, "safe_sndseek: ERROR — failed to reopen input file: %s\n", filename);
+        return -2;
+    }
+
+    fprintf(stderr, "safe_sndseek: Reopened input file. New ifd[0] = %d\n", dz->ifd[0]);
+
+    // Reset internal counters for reading
+    reset_filedata_counters(dz);
+    fprintf(stderr, "safe_sndseek: reset_filedata_counters completed.\n");
+
+    return 0;
 }
 
 /*************************** DO_FVARY_FILTERS *****************************/
