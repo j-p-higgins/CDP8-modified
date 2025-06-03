@@ -246,13 +246,7 @@ CMDLINE active_params   POSSIBLY        POSSIBLY        POSSIBLY
         return(FAILED);
     }
     exit_status = print_messages_and_close_sndfiles(FINISHED,is_launched,dz);
-    if (dz != NULL) {
-        if (dz->process == FLTBANKN) {
-            cleanup_fltbankn(dz);
-        }
-
-        // Optionally: memset(dz, 0, sizeof(*dz)); or free(dz); dz = NULL;
-    }
+    cleanup_fltbankn(dz);
     free(dz);
     return(SUCCEEDED);
 }
@@ -273,7 +267,7 @@ int setup_internal_arrays_and_array_pointers_for_lphp(dataptr dz)
     return(FINISHED);
 }
 
-void cleanup_fltbankn_state(dataptr dz) {
+void cleanup_fltbankn(dataptr dz) {
     if (!dz) return;
 
     // --- Free dynamically allocated arrays used in FLTBANKN ---
