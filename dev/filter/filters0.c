@@ -122,7 +122,10 @@ int filter_process(dataptr dz)
             sprintf(errstr,"No level found in input signal\n");
             return DATA_ERROR;
         }
-        sndseekEx(dz->ifd[0],0,0);
+        if (safe_sndseek(dz) < 0) {
+            sprintf(errstr, "ERROR: Failed to safely rewind input file for normalization.\n");
+            return DATA_ERROR;
+        }
         reset_filedata_counters(dz);
         if(dz->process==FLTBANKV) {
             if((exit_status = newfval(&(dz->iparam[FLT_FSAMS]),dz))<0)
@@ -408,8 +411,6 @@ int filter_process(dataptr dz)
             fprintf(stdout,"INFO: Number of overflows: %d\n",dz->iparam[FLT_OVFLW]);
         fflush(stdout);
     }
-    //close input file
-    sndcloseEx(dz->ifd[0]);
 
     return(FINISHED);
 }
