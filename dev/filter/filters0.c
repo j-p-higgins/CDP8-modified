@@ -71,6 +71,7 @@ static void lphp_filt_chan(double *e1,double *e2,double *s1,double *s2,
                     double *den1,double *den2,double *cn,dataptr dz,int chan);
 
 static int      do_fvary2_filters(dataptr dz);
+static int      safe_sndseek(dataptr dz);
 
 /****************************** FILTER_PROCESS *************************/
 
