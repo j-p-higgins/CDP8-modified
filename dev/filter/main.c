@@ -306,13 +306,4 @@ void cleanup_fltbankn(dataptr dz) {
     dz->iparam[FLT_OVFLW] = 0;
     dz->param[FLT_GAIN] = 1.0;
 
-    // --- Optional: Free breakpoints if used ---
-    if (dz->breakpoints) {
-        for (int i = 0; i < dz->brksize; i++) {
-            if (dz->breakpoints[i]) free(dz->breakpoints[i]);
-        }
-        free(dz->breakpoints);
-        dz->breakpoints = NULL;
-        dz->brksize = 0;
-    }
 }
