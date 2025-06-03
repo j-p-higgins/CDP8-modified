@@ -723,8 +723,8 @@ int groucho_process_file(dataptr dz)   /* FUNCTIONS FOUND IN PROCESS.C */
 {	
 //	int exit_status = FINISHED;
 
-	if(dz->process!= FLTBANKC)
-		display_virtual_time(0L,dz);
+	//if(dz->process!= FLTBANKC)
+		//display_virtual_time(0L,dz);
 
 	switch(dz->process) {
 	case(LPHP):
