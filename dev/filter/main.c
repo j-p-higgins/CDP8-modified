@@ -58,6 +58,7 @@ const char* cdp_version = "7.1.0";
 
 // TW MULTICHAN 2010
 static int setup_internal_arrays_and_array_pointers_for_lphp(dataptr dz);
+static void cleanup_fltbankn(dataptr dz);
 
 /**************************************** MAIN *********************************************/
 
@@ -245,16 +246,12 @@ CMDLINE active_params   POSSIBLY        POSSIBLY        POSSIBLY
         return(FAILED);
     }
     exit_status = print_messages_and_close_sndfiles(FINISHED,is_launched,dz);
-    // Free filter-related arrays
-    if (dz->parray) {
-        for (int i = 0; i < dz->array_cnt; i++) {
-            if (dz->parray[i]) {
-                free(dz->parray[i]);
-                dz->parray[i] = NULL;
-            }
+    if (dz != NULL) {
+        if (dz->process == FLTBANKN) {
+            cleanup_fltbankn(dz);
         }
-        free(dz->parray);
-        dz->parray = NULL;
+
+        // Optionally: memset(dz, 0, sizeof(*dz)); or free(dz); dz = NULL;
     }
     free(dz);
     return(SUCCEEDED);
@@ -276,3 +273,33 @@ int setup_internal_arrays_and_array_pointers_for_lphp(dataptr dz)
     return(FINISHED);
 }
 
+void cleanup_fltbankn(dataptr dz) {
+    int i;
+
+    // Free core filter arrays
+    int arrays[] = {
+        FLT_FRQ, FLT_AMP, FLT_AMPL, FLT_A, FLT_B,
+        FLT_WW, FLT_COSW, FLT_SINW, FLT_Y, FLT_Z
+    };
+    for (i = 0; i < sizeof(arrays) / sizeof(int); i++) {
+        if (dz->parray[arrays[i]]) {
+            free(dz->parray[arrays[i]]);
+            dz->parray[arrays[i]] = NULL;
+        }
+    }
+
+    // Optional double-filtering arrays
+    if (dz->vflag[FLT_DBLFILT]) {
+        if (dz->parray[FLT_D]) {
+            free(dz->parray[FLT_D]);
+            dz->parray[FLT_D] = NULL;
+        }
+        if (dz->parray[FLT_E]) {
+            free(dz->parray[FLT_E]);
+            dz->parray[FLT_E] = NULL;
+        }
+    }
+
+    // Also clear related integer params if desired
+    dz->iparam[FLT_CNT] = 0;
+}
