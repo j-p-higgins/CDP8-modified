@@ -414,26 +414,38 @@ int filter_process(dataptr dz)
 
 int safe_sndseek(dataptr dz) {
     // Get the input filename before closing
-    const char* filename = snd_getfilename(dz->ifd[0]);
-    if (!filename) {
+    const char* filename_tmp = snd_getfilename(dz->ifd[0]);
+    if (!filename_tmp) {
         fprintf(stderr, "safe_sndseek: ERROR — could not retrieve filename from ifd[0] = %d\n", dz->ifd[0]);
         return -1;
     }
 
-    fprintf(stderr, "safe_sndseek: Retrieved filename = %s\n", filename);
+    // Allocate memory and copy the filename
+    char* filename_buf = malloc(strlen(filename_tmp) + 1);
+    if (!filename_buf) {
+        fprintf(stderr, "safe_sndseek: ERROR — memory allocation failed for filename copy\n");
+        return -1;
+    }
+    strcpy(filename_buf, filename_tmp);
+
+    fprintf(stderr, "safe_sndseek: Retrieved filename = %s\n", filename_buf);
 
     // Close the input file
     fprintf(stderr, "safe_sndseek: Closing input file descriptor %d\n", dz->ifd[0]);
     sndcloseEx(dz->ifd[0]);
 
     // Reopen the input file
-    dz->ifd[0] = sndopenEx(filename, 0, 0);
+    dz->ifd[0] = sndopenEx(filename_buf, 0, 0);
     if (dz->ifd[0] < 0) {
-        fprintf(stderr, "safe_sndseek: ERROR — failed to reopen input file: %s\n", filename);
+        fprintf(stderr, "safe_sndseek: ERROR — failed to reopen input file: %s\n", filename_buf);
+        free(filename_buf);
         return -2;
     }
 
     fprintf(stderr, "safe_sndseek: Reopened input file. New ifd[0] = %d\n", dz->ifd[0]);
+
+    // Clean up
+    free(filename_buf);
 
     // Reset internal counters for reading
     reset_filedata_counters(dz);
